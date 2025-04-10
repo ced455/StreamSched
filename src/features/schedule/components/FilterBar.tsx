@@ -21,15 +21,19 @@ export function FilterBar({
 
   // Filter the list based on sidebar search input
   const filteredStreamers = useMemo(() => {
-    return availableStreamers.filter(streamer =>
-      streamer.name.toLowerCase().includes(sidebarSearch.toLowerCase())
-    );
+    return availableStreamers
+      .filter(streamer =>
+        streamer.name.toLowerCase().includes(sidebarSearch.toLowerCase())
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [availableStreamers, sidebarSearch]);
 
   const filteredCategories = useMemo(() => {
-    return availableCategories.filter(category =>
-      category.name.toLowerCase().includes(sidebarSearch.toLowerCase())
-    );
+    return availableCategories
+      .filter(category =>
+        category.name.toLowerCase().includes(sidebarSearch.toLowerCase())
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [availableCategories, sidebarSearch]);
 
   // Handler for selecting a streamer (toggle selection)
