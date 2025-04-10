@@ -251,7 +251,14 @@ export function CalendarView() {
                                         ) : (
                                           <div className="avatar-placeholder" />
                                         )}
-                                        <span className="streamer-name">{stream.streamerName}</span>
+                                        <a 
+                                          href={`https://twitch.tv/${stream.streamerName}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="streamer-name"
+                                        >
+                                          {stream.streamerName}
+                                        </a>
                                       </div>
                                     </div>
                                     {stream.game && (

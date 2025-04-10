@@ -298,6 +298,12 @@
   font-weight: 600;
   font-size: 0.9375rem;
   color: #111827;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.streamer-name:hover {
+  color: var(--primary-color, #0284c7);
 }
 
 .stream-category {
