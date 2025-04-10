@@ -1,26 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppError } from '../utils/error';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { AuthContext } from './context';
 
 export interface AuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
   expiresIn?: string;
 }
-
-interface AuthContextType {
-  auth: AuthState;
-  handleAuthCallback: (hash: string) => Promise<void>;
-  login: () => void;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType>({
-  auth: { isAuthenticated: false, accessToken: null },
-  handleAuthCallback: async () => {},
-  login: () => {},
-  logout: () => {}
-});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<AuthState>({ isAuthenticated: false, accessToken: null });
@@ -109,13 +96,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return <LoadingSpinner />;
   }
 
+  const value = {
+    auth,
+    handleAuthCallback,
+    login,
+    logout
+  };
+
   return (
-    <AuthContext.Provider value={{ auth, handleAuthCallback, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }

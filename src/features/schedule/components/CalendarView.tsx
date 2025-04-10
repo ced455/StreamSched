@@ -9,6 +9,7 @@ import { TwitchStream } from '../../../types/api';
 import './CalendarView.css';
 
 export function CalendarView() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [filters, setFilters] = useState<FilterOptions>({ 
     searchTerm: '', 
     categories: [], 
@@ -65,6 +66,15 @@ export function CalendarView() {
     setWeekStart(next);
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="calendar-view">
@@ -81,17 +91,6 @@ export function CalendarView() {
       </div>
     );
   }
-
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   return (
     <DrawerProvider>

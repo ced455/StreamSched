@@ -1,13 +1,5 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-
-interface DrawerContextType {
-  isOpen: boolean;
-  openDrawer: () => void;
-  closeDrawer: () => void;
-  toggleDrawer: () => void;
-}
-
-const DrawerContext = createContext<DrawerContextType | null>(null);
+import { useState, useCallback, ReactNode } from 'react';
+import { DrawerContext } from './DrawerContextInstance';
 
 interface DrawerProviderProps {
   children: ReactNode;
@@ -25,12 +17,4 @@ export function DrawerProvider({ children }: DrawerProviderProps) {
       {children}
     </DrawerContext.Provider>
   );
-}
-
-export function useDrawer() {
-  const context = useContext(DrawerContext);
-  if (!context) {
-    throw new Error('useDrawer must be used within a DrawerProvider');
-  }
-  return context;
 }

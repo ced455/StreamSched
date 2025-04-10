@@ -1,3 +1,5 @@
+import { AxiosError } from '../types/axios';
+
 export class AppError extends Error {
   public readonly code: string;
   public readonly retryable: boolean;
@@ -16,7 +18,16 @@ export class AppError extends Error {
     this.details = details;
   }
 
-  static fromAxiosError(error: any): AppError {
+  static fromAxiosError(error: unknown): AppError {
+    const isAxiosError = (err: unknown): err is AxiosError => {
+      return typeof err === 'object' && err !== null && 
+        ('response' in err || 'request' in err || 'message' in err);
+    };
+
+    if (!isAxiosError(error)) {
+      return new AppError('Unknown error occurred', 'UNKNOWN_ERROR', false);
+    }
+
     if (error.response) {
       // Server responded with error status
       return new AppError(
@@ -25,24 +36,26 @@ export class AppError extends Error {
         error.response.status >= 500, // Server errors are retryable
         error.response.data
       );
-    } else if (error.request) {
+    } 
+    
+    if (error.request) {
       // Request made but no response
       return new AppError(
         'Network error occurred',
         'NETWORK_ERROR',
         true // Network errors are retryable
       );
-    } else {
-      // Request setup error
-      return new AppError(
-        error.message,
-        'REQUEST_SETUP_ERROR',
-        false
-      );
-    }
+    } 
+    
+    // Request setup error
+    return new AppError(
+      error.message,
+      'REQUEST_SETUP_ERROR',
+      false
+    );
   }
 
-  static fromTwitchError(error: any): AppError {
+  static fromTwitchError(error: { status: number; headers?: Record<string, string>; message?: string }): AppError {
     if (error.status === 401) {
       return new AppError(
         'Authentication expired',

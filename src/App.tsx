@@ -2,7 +2,7 @@ import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'reac
 import { Home } from './components/Home';
 import { Auth } from './components/auth/Auth';
 import { CalendarView } from './features/schedule/components/CalendarView';
-import { useAuth } from './store/AuthContext';
+import { useAuth } from './store/hooks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './store/AuthContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';

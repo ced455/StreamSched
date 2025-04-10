@@ -1,4 +1,4 @@
-import { useAuth } from '../store/AuthContext';
+import { useAuth } from '../store/hooks';
 import './Home.css';
 
 export function Home() {

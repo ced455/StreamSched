@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useDrawer } from '../DrawerContext/DrawerContext';
+import { useDrawer } from '../../hooks/useDrawer';
 import { FilterBarProps } from '../../types/schedule';
 import { FilterBar } from '../FilterBar';
 import './Drawer.css';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../store/AuthContext';
+import { useAuth } from '../../store/hooks';
 import { ErrorDisplay } from '../common/ErrorBoundary';
 import { AppError } from '../../utils/error';
 

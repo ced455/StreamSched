@@ -2,6 +2,13 @@ import axios from 'axios';
 import { TwitchStream, Schedule, GameInfo } from '../types/api';
 import { AppError } from '../utils/error';
 import { storage } from './storage';
+import {
+  TwitchAPIResponse,
+  TwitchUserResponse,
+  TwitchFollowResponse,
+  TwitchScheduleResponse,
+  TwitchGameResponse
+} from '../types/twitch';
 
 const TWITCH_API_URL = 'https://api.twitch.tv/helix';
 const AUTH_URL = 'https://id.twitch.tv/oauth2';
@@ -38,30 +45,30 @@ class TwitchService {
         headers: { 'Authorization': `OAuth ${token}` }
       });
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Token validation failed:', error);
       return false;
     }
   }
 
-  async getUser(token: string) {
+  async getUser(token: string): Promise<TwitchUserResponse> {
     try {
-      const response = await axios.get(`${TWITCH_API_URL}/users`, {
+      const response = await axios.get<TwitchAPIResponse<TwitchUserResponse>>(`${TWITCH_API_URL}/users`, {
         headers: this.getAuthHeaders(token)
       });
       if (!response.data.data || response.data.data.length === 0) {
         throw new Error('User not found');
       }
       return response.data.data[0];
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to get user:', error);
       throw AppError.fromAxiosError(error);
     }
   }
   
-  async getUserById(token: string, id: string) {
+  async getUserById(token: string, id: string): Promise<TwitchUserResponse> {
     try {
-      const response = await axios.get(`${TWITCH_API_URL}/users`, {
+      const response = await axios.get<TwitchAPIResponse<TwitchUserResponse>>(`${TWITCH_API_URL}/users`, {
         headers: this.getAuthHeaders(token),
         params: { id }
       });
@@ -69,7 +76,7 @@ class TwitchService {
         throw new Error('User not found');
       }
       return response.data.data[0];
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to get user by id:', error);
       throw AppError.fromAxiosError(error);
     }
@@ -81,21 +88,28 @@ class TwitchService {
       const broadcasterIds: string[] = [];
       let after: string | undefined = undefined;
       do {
-        const params: any = { user_id: user.id, first: 100 };
+        const params: {
+          user_id: string;
+          first: number;
+          after?: string;
+        } = {
+          user_id: user.id,
+          first: 100,
+        };
         if (after) {
           params.after = after;
         }
-        const response = await axios.get(`${TWITCH_API_URL}/channels/followed`, {
+        const response = await axios.get<TwitchAPIResponse<TwitchFollowResponse>>(`${TWITCH_API_URL}/channels/followed`, {
           headers: this.getAuthHeaders(token),
-          params: params
+          params
         });
         if (response.data.data) {
-          broadcasterIds.push(...response.data.data.map((follow: any) => follow.broadcaster_id));
+          broadcasterIds.push(...response.data.data.map((follow: TwitchFollowResponse) => follow.broadcaster_id));
         }
-        after = response.data.pagination && response.data.pagination.cursor;
+        after = response.data.pagination?.cursor;
       } while (after);
       return broadcasterIds;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to get followed channels:', error);
       throw AppError.fromAxiosError(error);
     }
@@ -110,12 +124,12 @@ class TwitchService {
         schedule = cached;
       } else {
         // Fetch from API
-        const response = await axios.get(`${TWITCH_API_URL}/schedule`, {
+        const response = await axios.get<TwitchScheduleResponse>(`${TWITCH_API_URL}/schedule`, {
           headers: this.getAuthHeaders(token),
           params: { broadcaster_id: streamerId }
         });
   
-        if (!response.data.data || !response.data.data.segments) {
+        if (!response.data.data?.segments) {
           schedule = {
             streamerId,
             streams: [],
@@ -123,13 +137,15 @@ class TwitchService {
             expiresAt: Date.now() + 3600000
           };
         } else {
-          const streams: TwitchStream[] = response.data.data.segments.map((segment: any) => ({
+          const streams: TwitchStream[] = response.data.data.segments.map(segment => ({
             id: segment.id,
             title: segment.title,
             startTime: segment.start_time,
             endTime: segment.end_time,
             game: segment.category ? {
               name: segment.category.name,
+              description: '', // These fields aren't provided by the schedule API
+              image: ''
             } : null,
             streamerId,
             streamerName: response.data.data.broadcaster_name
@@ -155,8 +171,8 @@ class TwitchService {
       await storage.setSchedule(streamerId, schedule);
   
       return schedule;
-    } catch (error: any) {
-      if (error.response && error.response.status === 404) {
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
         return {
           streamerId,
           streams: [],
@@ -176,7 +192,7 @@ class TwitchService {
         streamerIds.map(id => this.getSchedule(token, id))
       );
       return schedules;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to get all schedules:', error);
       throw AppError.fromAxiosError(error);
     }
@@ -186,7 +202,7 @@ class TwitchService {
     try {
       if (names.length === 0) return [];
       
-      const response = await axios.get(`${TWITCH_API_URL}/games`, {
+      const response = await axios.get<TwitchAPIResponse<TwitchGameResponse>>(`${TWITCH_API_URL}/games`, {
         headers: this.getAuthHeaders(token),
         params: { name: names }
       });
@@ -195,12 +211,12 @@ class TwitchService {
         return [];
       }
 
-      return response.data.data.map((game: any) => ({
+      return response.data.data.map(game => ({
         id: game.id,
         name: game.name,
         boxArtUrl: game.box_art_url.replace('{width}', '40').replace('{height}', '40')
       }));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to get games:', error);
       throw AppError.fromAxiosError(error);
     }

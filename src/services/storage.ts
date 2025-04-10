@@ -22,7 +22,7 @@ class StorageService {
         }
       });
       this.isInitialized = true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to initialize IndexedDB:', error);
       this.db = null;
       throw new AppError('Failed to initialize storage', 'STORAGE_INIT_ERROR');

@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../../../store/AuthContext';
+import { useAuth } from '../../../store/hooks';
 import { useMemo } from 'react';
 import { twitch } from '../../../services/twitch';
 import { Schedule, TwitchStream } from '../../../types/api';
