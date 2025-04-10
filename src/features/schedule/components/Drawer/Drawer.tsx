@@ -1,12 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useDrawer } from '../../hooks/useDrawer';
 import { FilterBarProps } from '../../types/schedule';
 import { FilterBar } from '../FilterBar';
+import { useAuth } from '../../../../store';
 import './Drawer.css';
 
 export function Drawer(props: FilterBarProps) {
   const { isOpen, closeDrawer } = useDrawer();
+  const { logout } = useAuth();
   const drawerRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = useCallback(() => {
+    closeDrawer();
+    // Add a small delay to let the drawer close animation finish
+    setTimeout(() => {
+      logout();
+    }, 300);
+  }, [closeDrawer, logout]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -55,6 +65,23 @@ export function Drawer(props: FilterBarProps) {
         </div>
         <div className="drawer-content">
           <FilterBar {...props} className="drawer-filter-bar" />
+          <div className="user-menu">
+            <button 
+              onClick={handleLogout}
+              className="logout-button"
+              aria-label="Logout"
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path 
+                  d="M17 7l-5 5m0 0l-5-5m5 5V3m7 13v.01M7 16v.01M12 21a9 9 0 110-18 9 9 0 010 18z" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </div>

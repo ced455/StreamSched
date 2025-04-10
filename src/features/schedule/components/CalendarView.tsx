@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSchedule } from '../hooks/useSchedule';
 import { FilterBar } from './FilterBar';
 import { Drawer } from './Drawer/Drawer';

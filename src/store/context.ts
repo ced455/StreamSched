@@ -1,12 +1,5 @@
 import { createContext } from 'react';
-import { AuthState } from './AuthContext';
-
-export interface AuthContextType {
-  auth: AuthState;
-  handleAuthCallback: (hash: string) => Promise<void>;
-  login: () => void;
-  logout: () => void;
-}
+import { AuthContextType } from './types';
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 

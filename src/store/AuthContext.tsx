@@ -4,11 +4,7 @@ import { AppError } from '../utils/error';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { AuthContext } from './context';
 
-export interface AuthState {
-  isAuthenticated: boolean;
-  accessToken: string | null;
-  expiresIn?: string;
-}
+import { AuthState } from './types';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<AuthState>({ isAuthenticated: false, accessToken: null });

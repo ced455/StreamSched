@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { FilterBarProps } from '../types/schedule';
+import { useAuth } from '../../../store';
 import './FilterBar.css';
 
 export function FilterBar({
@@ -12,6 +13,11 @@ export function FilterBar({
   // New state for active tab and sidebar search query
   const [activeTab, setActiveTab] = useState<'streamers' | 'categories'>('streamers');
   const [sidebarSearch, setSidebarSearch] = useState('');
+  const { logout } = useAuth();
+
+  const handleLogout = useCallback(() => {
+    logout();
+  }, [logout]);
 
   // Filter the list based on sidebar search input
   const filteredStreamers = useMemo(() => {
@@ -52,8 +58,9 @@ export function FilterBar({
 
   return (
     <div className={`filter-sidebar ${className}`}>
-      <h2 className="filter-title">Filters</h2>
-      <div className="search-container">
+      <div className="sidebar-content">
+        <h2 className="filter-title">Filters</h2>
+        <div className="search-container">
         <input 
           type="text"
           placeholder="Search..."
@@ -112,6 +119,24 @@ export function FilterBar({
             ))}
           </div>
         )}
+        </div>
+        <div className="user-menu">
+          <button 
+            onClick={handleLogout}
+            className="logout-button"
+            aria-label="Logout"
+          >
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path 
+                d="M17 7l-5 5m0 0l-5-5m5 5V3m7 13v.01M7 16v.01M12 21a9 9 0 110-18 9 9 0 010 18z" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );
