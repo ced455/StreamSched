@@ -29,7 +29,7 @@ export function Auth() {
         await handleAuthCallback(hash);
         // Essayer de vider le hash pour éviter les appels répétés
         try {
-          window.history.replaceState(null, '', '/auth');
+          window.history.replaceState(null, '', '#/auth');
         } catch (e) {
           console.error("Error clearing hash:", e);
         }
@@ -52,7 +52,7 @@ export function Auth() {
       <div className="auth-error">
         <ErrorDisplay 
           error={error}
-          onRetry={() => window.location.href = '/'}
+          onRetry={() => window.location.href = '#/'}
         />
       </div>
     );
