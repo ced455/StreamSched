@@ -43,12 +43,17 @@ export function CalendarView() {
 
   const groupedStreams = weekStreams.reduce((groups, stream: TwitchStream) => {
     const dateKey = new Date(stream.startTime).toISOString().split('T')[0];
+    const timeKey = new Date(stream.startTime).toISOString();
+    
     if (!groups[dateKey]) {
-      groups[dateKey] = [];
+      groups[dateKey] = {};
     }
-    groups[dateKey].push(stream);
+    if (!groups[dateKey][timeKey]) {
+      groups[dateKey][timeKey] = [];
+    }
+    groups[dateKey][timeKey].push(stream);
     return groups;
-  }, {} as Record<string, TwitchStream[]>);
+  }, {} as Record<string, Record<string, TwitchStream[]>>);
 
   const sortedDates = Object.keys(groupedStreams).sort(
     (a, b) => new Date(a).getTime() - new Date(b).getTime()
@@ -154,33 +159,40 @@ export function CalendarView() {
               return (
                 <div key={date} className="day-card">
                   <h3>{formattedDate}</h3>
-                  <ul>
-                    {groupedStreams[date].map((stream) => (
-                      <li key={stream.id} className="stream-card">
-                        <div className="stream-card-header">
-                          <div className="streamer-info">
-                            {stream.streamerAvatar ? (
-                              <img 
-                                className="streamer-avatar" 
-                                src={stream.streamerAvatar} 
-                                alt={`${stream.streamerName} avatar`} 
-                              />
-                            ) : (
-                              <div className="avatar-placeholder" />
+              {Object.entries(groupedStreams[date])
+                .sort(([timeA], [timeB]) => new Date(timeA).getTime() - new Date(timeB).getTime())
+                .map(([timeKey, streams]) => {
+                  const formattedTime = new Date(timeKey).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div key={timeKey} className="time-group">
+                      <div className="time-heading">{formattedTime}</div>
+                      <ul>
+                        {streams.map((stream) => (
+                          <li key={stream.id} className="stream-card">
+                            <div className="stream-card-header">
+                              <div className="streamer-info">
+                                {stream.streamerAvatar ? (
+                                  <img 
+                                    className="streamer-avatar" 
+                                    src={stream.streamerAvatar} 
+                                    alt={`${stream.streamerName} avatar`} 
+                                  />
+                                ) : (
+                                  <div className="avatar-placeholder" />
+                                )}
+                                <span className="streamer-name">{stream.streamerName}</span>
+                              </div>
+                            </div>
+                            {stream.game && (
+                              <div className="stream-category">{stream.game.name}</div>
                             )}
-                            <span className="streamer-name">{stream.streamerName}</span>
-                          </div>
-                          <span className="stream-time">
-                            {new Date(stream.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        {stream.game && (
-                          <div className="stream-category">{stream.game.name}</div>
-                        )}
-                        <div className="stream-title">{stream.title}</div>
-                      </li>
-                    ))}
-                  </ul>
+                            <div className="stream-title">{stream.title}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
                 </div>
               );
             })}
