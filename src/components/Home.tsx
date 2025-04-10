@@ -28,7 +28,6 @@ export function Home() {
           <h2>Features</h2>
           <ul>
             <li>📅 View all your followed streamers' schedules in one place</li>
-            <li>🔔 Never miss a stream with optional notifications</li>
             <li>📱 Access anywhere with our mobile-first design</li>
             <li>💾 Works offline with cached schedules</li>
           </ul>
