@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { twitch } from '../services/twitch';
 import { AppError } from '../utils/error';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { AuthContext } from './context';
@@ -79,12 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = () => {
-    // Build the Twitch OAuth URL using environment variables
-    const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
-    const redirectUri = import.meta.env.VITE_AUTH_REDIRECT_URI;
-    const scope = "user:read:email user:read:follows";
-    const responseType = "token";
-    window.location.href = `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+    window.location.href = twitch.getAuthUrl();
   };
 
   const logout = () => {
