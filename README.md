@@ -10,7 +10,6 @@ A modern web application for managing and discovering Twitch streamer schedules,
 
 StreamSched is your personal Twitch streaming calendar that helps you:
 - Track when your favorite streamers go live
-- Discover new streams based on your interests
 - View streamer schedules in a clean, intuitive calendar interface
 
 ## Features

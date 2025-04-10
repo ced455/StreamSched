@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSchedule } from '../hooks/useSchedule';
 import { FilterBar } from './FilterBar';
+import { Drawer } from './Drawer/Drawer';
+import { MobileHeader } from './MobileHeader/MobileHeader';
+import { DrawerProvider } from './DrawerContext/DrawerContext';
 import { FilterOptions, SortOptions } from '../types/schedule';
 import { TwitchStream } from '../../../types/api';
 import './CalendarView.css';
@@ -79,35 +82,76 @@ export function CalendarView() {
     );
   }
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <div className="calendar-view">
-      <div className="layout-container">
-        <aside className="sidebar">
-          <FilterBar
-            filters={filters}
-            onFilterChange={setFilters}
-            sort={sort}
-            onSortChange={setSort}
-            availableCategories={availableCategories}
-            availableStreamers={availableStreamers}
-          />
-        </aside>
-        <main className="calendar-content">
-          <div className="week-navigation">
-            <button onClick={prevWeek}>Previous Week</button>
-            <span>
-              {weekStart.toLocaleDateString('fr-FR')} - {weekEnd.toLocaleDateString('fr-FR')}
-            </span>
-            <button onClick={nextWeek}>Next Week</button>
-          </div>
-          <div className="day-cards">
-            {sortedDates.map((date) => {
-              const formattedDate = new Date(date).toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-              });
+    <DrawerProvider>
+      <div className="calendar-view">
+        <div className="layout-container">
+          {/* Desktop Sidebar */}
+          {!isMobile && (
+            <aside className="sidebar">
+              <FilterBar
+                filters={filters}
+                onFilterChange={setFilters}
+                sort={sort}
+                onSortChange={setSort}
+                availableCategories={availableCategories}
+                availableStreamers={availableStreamers}
+              />
+            </aside>
+          )}
+
+          {/* Mobile Header */}
+          {isMobile && (
+            <MobileHeader
+              weekStart={weekStart}
+              weekEnd={weekEnd}
+              onPrevWeek={prevWeek}
+              onNextWeek={nextWeek}
+            />
+          )}
+
+          {/* Mobile Drawer */}
+          {isMobile && (
+            <Drawer
+              filters={filters}
+              onFilterChange={setFilters}
+              sort={sort}
+              onSortChange={setSort}
+              availableCategories={availableCategories}
+              availableStreamers={availableStreamers}
+            />
+          )}
+
+          <main className="calendar-content">
+            {/* Desktop Week Navigation */}
+            {!isMobile && (
+              <div className="week-navigation">
+                <button onClick={prevWeek}>Previous Week</button>
+                <span>
+                  {weekStart.toLocaleDateString('fr-FR')} - {weekEnd.toLocaleDateString('fr-FR')}
+                </span>
+                <button onClick={nextWeek}>Next Week</button>
+              </div>
+            )}
+            <div className="day-cards">
+              {sortedDates.map((date) => {
+                const formattedDate = new Date(date).toLocaleDateString('fr-FR', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                });
               return (
                 <div key={date} className="day-card">
                   <h3>{formattedDate}</h3>
@@ -142,8 +186,9 @@ export function CalendarView() {
               );
             })}
           </div>
-        </main>
-      </div>
-    </div>
-  );
+              </main>
+            </div>
+          </div>
+        </DrawerProvider>
+      );
 }

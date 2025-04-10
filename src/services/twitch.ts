@@ -78,7 +78,7 @@ class TwitchService {
   async getFollowedChannels(token: string): Promise<string[]> {
     try {
       const user = await this.getUser(token);
-      let broadcasterIds: string[] = [];
+      const broadcasterIds: string[] = [];
       let after: string | undefined = undefined;
       do {
         const params: any = { user_id: user.id, first: 100 };
