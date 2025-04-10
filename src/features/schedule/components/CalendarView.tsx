@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSchedule } from '../hooks/useSchedule';
 import { FilterBar } from './FilterBar';
 import { Drawer } from './Drawer/Drawer';
@@ -20,6 +20,7 @@ export function CalendarView() {
     field: 'startTime', 
     direction: 'asc'
   });
+  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(new Set());
   
   const { streams, allStreamers: availableStreamers, availableCategories, isLoading, error, refetch } = useSchedule(filters, sort);
 
@@ -97,6 +98,50 @@ export function CalendarView() {
     );
   }
 
+  const toggleDayCollapse = (date: string) => {
+    const newCollapsed = new Set(collapsedDays);
+    if (collapsedDays.has(date)) {
+      newCollapsed.delete(date);
+    } else {
+      newCollapsed.add(date);
+    }
+    setCollapsedDays(newCollapsed);
+  };
+
+  // Get unique streamers for a given day
+  const getDayStreamers = (date: string) => {
+    const uniqueStreamers = new Set<string>();
+    const avatars = new Map<string, string>();
+    
+    Object.values(groupedStreams[date]).forEach(streams => {
+      streams.forEach(stream => {
+        if (stream.streamerName && !uniqueStreamers.has(stream.streamerName)) {
+          uniqueStreamers.add(stream.streamerName);
+          if (stream.streamerAvatar) {
+            avatars.set(stream.streamerName, stream.streamerAvatar);
+          }
+        }
+      });
+    });
+
+    return Array.from(uniqueStreamers).map(name => ({
+      name,
+      avatar: avatars.get(name)
+    }));
+  };
+
+  const ChevronIcon = ({ className = '' }: { className?: string }) => (
+    <svg 
+      className={className} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2"
+    >
+      <path d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+
   return (
     <DrawerProvider>
       <div className="calendar-view">
@@ -157,42 +202,71 @@ export function CalendarView() {
                   year: 'numeric'
                 });
               return (
-                <div key={date} className="day-card">
-                  <h3>{formattedDate}</h3>
-              {Object.entries(groupedStreams[date])
-                .sort(([timeA], [timeB]) => new Date(timeA).getTime() - new Date(timeB).getTime())
-                .map(([timeKey, streams]) => {
-                  const formattedTime = new Date(timeKey).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                  return (
-                    <div key={timeKey} className="time-group">
-                      <div className="time-heading">{formattedTime}</div>
-                      <ul>
-                        {streams.map((stream) => (
-                          <li key={stream.id} className="stream-card">
-                            <div className="stream-card-header">
-                              <div className="streamer-info">
-                                {stream.streamerAvatar ? (
-                                  <img 
-                                    className="streamer-avatar" 
-                                    src={stream.streamerAvatar} 
-                                    alt={`${stream.streamerName} avatar`} 
-                                  />
-                                ) : (
-                                  <div className="avatar-placeholder" />
-                                )}
-                                <span className="streamer-name">{stream.streamerName}</span>
-                              </div>
-                            </div>
-                            {stream.game && (
-                              <div className="stream-category">{stream.game.name}</div>
-                            )}
-                            <div className="stream-title">{stream.title}</div>
-                          </li>
-                        ))}
-                      </ul>
+                <div key={date} className={`day-card ${collapsedDays.has(date) ? 'collapsed' : ''}`}>
+                  <div className="day-card-header">
+                    <h3>{formattedDate}</h3>
+                    <button 
+                      className={`collapse-button ${collapsedDays.has(date) ? 'collapsed' : ''}`}
+                      onClick={() => toggleDayCollapse(date)}
+                    >
+                      {collapsedDays.has(date) ? 'Expand' : 'Collapse'}
+                      <ChevronIcon />
+                    </button>
+                  </div>
+                  {collapsedDays.has(date) ? (
+                    <div className="avatar-list">
+                      {getDayStreamers(date).map(streamer => (
+                        streamer.avatar && (
+                          <img
+                            key={streamer.name}
+                            className="streamer-avatar"
+                            src={streamer.avatar}
+                            alt={`${streamer.name} avatar`}
+                            title={streamer.name}
+                          />
+                        )
+                      ))}
                     </div>
-                  );
-                })}
+                  ) : (
+                    <>
+                      <div className="expanded-content">
+                        {Object.entries(groupedStreams[date])
+                        .sort(([timeA], [timeB]) => new Date(timeA).getTime() - new Date(timeB).getTime())
+                        .map(([timeKey, streams]) => {
+                          const formattedTime = new Date(timeKey).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                          return (
+                            <div key={timeKey} className="time-group">
+                              <div className="time-heading">{formattedTime}</div>
+                              <ul>
+                                {streams.map((stream) => (
+                                  <li key={stream.id} className="stream-card">
+                                    <div className="stream-card-header">
+                                      <div className="streamer-info">
+                                        {stream.streamerAvatar ? (
+                                          <img 
+                                            className="streamer-avatar" 
+                                            src={stream.streamerAvatar} 
+                                            alt={`${stream.streamerName} avatar`} 
+                                          />
+                                        ) : (
+                                          <div className="avatar-placeholder" />
+                                        )}
+                                        <span className="streamer-name">{stream.streamerName}</span>
+                                      </div>
+                                    </div>
+                                    {stream.game && (
+                                      <div className="stream-category">{stream.game.name}</div>
+                                    )}
+                                    <div className="stream-title">{stream.title}</div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })}
